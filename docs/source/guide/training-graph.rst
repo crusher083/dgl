@@ -3,12 +3,13 @@
 5.4 Graph Classification
 ----------------------------------
 
-Instead of a big single graph, sometimes one might have the data in the
-form of multiple graphs, for example a list of different types of
-communities of people. By characterizing the friendship among people in
-the same community by a graph, one can get a list of graphs to classify. In
-this scenario, a graph classification model could help identify the type
-of the community, i.e. to classify each graph based on the structure and
+Instead of a big single graph, sometimes data might be presented in the
+form of multiple graphs (i.e. different types of social
+communities). By characterizing relationships between people in
+the same community in a form of a graph, we recieve an N (number of communities) 
+graphs suitable as inputs for classification task. In this scenario, a graph 
+classification model could help identify the type of the community, 
+i.e. to classify each graph based on the structure and
 overall information.
 
 Overview
@@ -16,11 +17,11 @@ Overview
 
 The major difference between graph classification and node
 classification or link prediction is that the prediction result
-characterizes the property of the entire input graph. One can perform the
+characterizes the entire input graph. We can perform the
 message passing over nodes/edges just like the previous tasks, but also
-needs to retrieve a graph-level representation.
+we also need to retrieve a graph-level representation.
 
-The graph classification pipeline proceeds as follows:
+The graph classification pipeline:
 
 .. figure:: https://data.dgl.ai/tutorial/batch/graph_classifier.png
    :alt: Graph Classification Process
@@ -37,14 +38,14 @@ From left to right, the common practice is:
 Batch of Graphs
 ^^^^^^^^^^^^^^^
 
-Usually a graph classification task trains on a lot of graphs, and it
-will be very inefficient to use only one graph at a time when
-training the model. Borrowing the idea of mini-batch training from
-common deep learning practice, one can build a batch of multiple graphs
+Usually a graph classifier is trained on a lot of graphs, and it
+will be very inefficient to use only one graph at a time during
+training. Borrowing the idea of mini-batch training from
+deep learning, we can build a batch of multiple graphs
 and send them together for one training iteration.
 
-In DGL, one can build a single batched graph from a list of graphs. This
-batched graph can be simply used as a single large graph, with connected
+In DGL, we can build a single batched graph from a list of graphs. This
+batched graph can be used as a single large graph, with connected
 components corresponding to the original small graphs.
 
 .. figure:: https://data.dgl.ai/tutorial/batch/batch.png
@@ -56,9 +57,9 @@ Graph Readout
 ^^^^^^^^^^^^^
 
 Every graph in the data may have its unique structure, as well as its
-node and edge features. In order to make a single prediction, one usually
-aggregates and summarizes over the possibly abundant information. This
-type of operation is named *readout*. Common readout operations include
+node and edge features. In order to make a single prediction, we usually
+aggregate and summarize over the available information. This
+type of operation is named **readout**. Common readout operations include
 summation, average, maximum or minimum over all node or edge features.
 
 Given a graph :math:`g`, one can define the average node feature readout as
@@ -71,7 +72,7 @@ the set of nodes in :math:`g`, :math:`h_v` is the feature of node :math:`v`.
 DGL provides built-in support for common readout operations. For example,
 :func:`dgl.readout_nodes` implements the above readout operation.
 
-Once :math:`h_g` is available, one can pass it through an MLP layer for
+Once :math:`h_g` is available, we can pass it through an MLP layer for
 classification output.
 
 Writing Neural Network Model
@@ -82,8 +83,8 @@ The input to the model is the batched graph with node and edge features.
 Computation on a Batched Graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, different graphs in a batch are entirely separated, i.e. no edges
-between any two graphs. With this nice property, all message passing
+First, different graphs in a batch are entirely separated - there are no edges
+between any two graphs. Therefore, all message passing
 functions still have the same results.
 
 Second, the readout function on a batched graph will be conducted over
@@ -119,7 +120,7 @@ concatenating the corresponding features from all graphs in order.
 Model Definition
 ^^^^^^^^^^^^^^^^
 
-Being aware of the above computation rules, one can define a model as follows.
+Taking into account aforementioned rules, we can define a model as follows.
 
 .. code:: python
 
@@ -149,10 +150,10 @@ Training Loop
 Data Loading
 ^^^^^^^^^^^^
 
-Once the model is defined, one can start training. Since graph
-classification deals with lots of relatively small graphs instead of a big
-single one, one can train efficiently on stochastic mini-batches
-of graphs, without the need to design sophisticated graph sampling
+Once the model is defined, we can start training. Since graph
+classification deals with lots of relatively small graphs instead of a big one, 
+we can train efficiently on stochastic mini-batches of graphs, 
+avoiding need to design sophisticated graph sampling
 algorithms.
 
 Assuming that one have a graph classification dataset as introduced in
@@ -163,9 +164,9 @@ Assuming that one have a graph classification dataset as introduced in
     import dgl.data
     dataset = dgl.data.GINDataset('MUTAG', False)
 
-Each item in the graph classification dataset is a pair of a graph and
-its label. One can speed up the data loading process by taking advantage
-of the DataLoader, by customizing the collate function to batch the
+Each item in the graph classification dataset is a pair of an input graph and
+its label. We can speed up the data loading process by taking advantage
+of the DataLoade class by customizing the collate function to batch the
 graphs:
 
 .. code:: python
@@ -176,7 +177,7 @@ graphs:
         batched_labels = torch.tensor(labels)
         return batched_graph, batched_labels
 
-Then one can create a DataLoader that iterates over the dataset of
+Then we create a DataLoader that iterates over the dataset of
 graphs in mini-batches.
 
 .. code:: python
@@ -192,8 +193,8 @@ graphs in mini-batches.
 Loop
 ^^^^
 
-Training loop then simply involves iterating over the dataloader and
-updating the model.
+Training loop is simple - we iterate over the dataloader and
+updating the model weights.
 
 .. code:: python
 
@@ -225,9 +226,9 @@ as the graph convolution layer, batch normalization, etc.
 Heterogeneous graph
 ~~~~~~~~~~~~~~~~~~~
 
-Graph classification with heterogeneous graphs is a little different
+Graph classification with heterogeneous graphs is different
 from that with homogeneous graphs. In addition to graph convolution modules
-compatible with heterogeneous graphs, one also needs to aggregate over the nodes of
+compatible with heterogeneous graphs, we need to aggregate over the nodes of
 different types in the readout function.
 
 The following shows an example of summing up the average of node
@@ -271,7 +272,7 @@ representations for each node type.
                     hg = hg + dgl.mean_nodes(g, 'h', ntype=ntype)
                 return self.classify(hg)
 
-The rest of the code is not different from that for homogeneous graphs.
+The rest of the code is similar to one for homogeneous graphs.
 
 .. code:: python
 
